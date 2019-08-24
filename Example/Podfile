@@ -3,6 +3,8 @@ use_frameworks!
 target 'BlueCompass_Example' do
   pod 'BlueCompass', :path => '../'
 
+  pod 'RxSwift'
+  
   target 'BlueCompass_Tests' do
     inherit! :search_paths
 
