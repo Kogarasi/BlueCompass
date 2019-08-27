@@ -1,56 +1,41 @@
-//
-//  ScriptRoutingHelper.swift
-//  dc7
-//
-//  Created by こが on 2019/08/15.
-//  Copyright © 2019 こが. All rights reserved.
-//
-
 import Foundation
 import WebKit
 import RxSwift
 
-class WebViewScriptRouter: WKUserContentController {
-  typealias Key = String
-  typealias Content = String
-  typealias Observer = PublishSubject<Content>
+public class BlueCompass: WKUserContentController {
   
-  var observers = Dictionary<Key, Observer>()
+  private var observers = Dictionary<String, ( subject: Any, sender: ( String ) -> Void )>()
   
-  //
-  // Routerへ購読を登録
-  //
-  func receive( _ key: Key ) -> Observer {
+  public func receive<Response>( _ key: String, _ responseType: Response.Type ) -> PublishSubject<Response> where Response: Decodable {
+    let dictionaryKey: String = key.description
     
-    if let observer = observers[ key ] {
-      return observer
+    if let element = observers[ dictionaryKey ] {
+      
+      return element.subject as! PublishSubject<Response>
     } else {
-      add( self, name: key )
+      add( self, name: key.description )
       
-      
-      let observer = Observer()
-      observers[ key ] = observer
-      
-      print( observers )
+      let observer = PublishSubject<Response>()
+      observers[ dictionaryKey ] = (observer, { message in
+        let decoded = try! JSONDecoder().decode( Response.self, from: message.description.data(using: .utf8 )! )
+        observer.on( .next( decoded ) )
+      })
       
       return observer
     }
-    
   }
-  
 }
 
-extension WebViewScriptRouter: WKScriptMessageHandler {
+extension BlueCompass: WKScriptMessageHandler {
   
-  // JSから呼ばれる
-  func userContentController( _ userContentController: WKUserContentController, didReceive message: WKScriptMessage ){
+  public func userContentController( _ userContentController: WKUserContentController, didReceive message: WKScriptMessage ){
     
     guard let messageData = message.body as? String else {
       fatalError( "message data is not stringified" )
     }
     
     if let observer = observers[ message.name ] {
-      observer.on( .next( messageData ) )
+      observer.sender( messageData )
     }
   }
 }
