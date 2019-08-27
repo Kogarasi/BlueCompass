@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'BlueCompass'
-  s.version          = '1.0.0'
+  s.version          = '1.0.1'
   s.summary          = 'Routing for WKScriptMessage'
 
 # This description is used to generate tags and improve search results.
@@ -41,5 +41,5 @@ Simple Routing Lilbray for WKScriptMessage.
   # s.frameworks = 'UIKit', 'MapKit'
   # s.dependency 'AFNetworking', '~> 2.3'
   s.dependency 'RxSwift', '~> 5.0'
-    
+  
 end
